@@ -116,30 +116,5 @@ int Fraction::compare(const Fraction &other) const{
         return -1;}
 
 int main() {
-    Fraction f1(5, 10);
-    Fraction f2 (4,10);
-    Fraction f4 (2,5);
-
-    bool f3 = f1.operator>(f2);
-    cout<<f1.toDecimal()<<endl;
-    f1.toString();
-    f2.reduce();
-    f2.toString();
-    cout<<f2.operator== (f4)<<endl;
-    cout<<f2.operator< (f1)<<endl;
-    cout<<f4.operator< (f1)<<endl;
-    cout<<f4.operator<= (f2)<<endl;
-    cout<<f2.operator> (f1)<<endl;
-    cout<<f4.operator> (f1)<<endl;
-    cout<<f4.operator>= (f2)<<endl;
-    Fraction f5;
-    f5.operator=(f1);
-    f5.toString();
-    Fraction f6 (1,3);
-    f6.operator++();
-    f6.toString();
-    Fraction f7 (2,3);
-    f7.operator--();
-    f7.toString();
     return 0;
 }
