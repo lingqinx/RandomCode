@@ -1,2 +1,2 @@
 # RandomCode
-all kinds of code
+some code that write randomly
