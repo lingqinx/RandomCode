@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-
-#define RED 0
-#define BLACK 1
+#define COUNT 5
+#define RED 1
+#define BLACK 0
 
 struct node{
-    int key;
+    int data;
     int color;
     struct node *parent;
     struct node *left;
@@ -17,115 +18,83 @@ struct node{
 struct node *ROOT;
 struct node *NILL;
 
-void left_rotate(struct node *x);
-void right_rotate(struct node *x);
-void tree_print(struct node *x);
-void red_black_insert(int key);
-void red_black_insert_fixup(struct node *z);
-struct node *tree_search(int key);
-struct node *tree_minimum(struct node *x);
-void red_black_transplant(struct node *u, struct node *v);
-void red_black_delete(struct node *z);
-void red_black_delete_fixup(struct node *x);
-
-int main(){
-    NILL = malloc(sizeof(struct node));
-    NILL->color = BLACK;
-
-    ROOT = NILL;
-
-    printf("RED-BLACK TREE INSERT\n\n");
+void left_rotate(struct node *x){
+    struct node *y;
     
-    srand(time(NULL));
-    int array[20];
-    for (int i=0; i<20; i++){
-
-        array[i] = rand()%50;
-    } 
-    for (int i=0; i<20; i++){
-        if (tree_search(array[i]) == NILL){
-            red_black_insert(array[i]);
-        }        
-    } 
-
-    printf("TREE PRINT\n\n");
-    tree_print(ROOT);
-    printf("\n");
-
-    printf("\nTREE INSERT\n");
-    printf("INSERT 5: \n");
-    if (tree_search(5) == NILL){
-        red_black_insert(5);
-    } else{
-        printf("The key exists\n");
-    }  
-    tree_print(ROOT);
-    printf("\n");
-
-    printf("INSERT 7: \n");
-    if (tree_search(7) == NILL){
-        red_black_insert(7);
-    } else{
-        printf("The key exists\n");
+    /* Make y's left child x's right child */
+    y = x->right;
+    x->right = y->left;
+    if(y->left != NILL){
+        y->left->parent = x;
     }
-    tree_print(ROOT);
-    printf("\n");
-    printf("INSERT 51: \n");
-    if (tree_search(51) == NILL){
-        red_black_insert(51);
-    }else{
-        printf("The key exists\n");
-    }   
-    tree_print(ROOT);
-    printf("\n");
-    printf("INSERT 17: \n");
-    if (tree_search(17) == NILL){
-        red_black_insert(17);
-    }else{
-        printf("The key exists\n");
-    }   
-    tree_print(ROOT);
-    printf("\n");
+    y->parent = x->parent;
+    if(y->parent == NILL){
+        ROOT = y;
+    }
+    else if(x == x->parent->left){
+        x->parent->left = y;
+    }
+    else{
+        x->parent->right = y;
+    }
     
-
-
-    printf("\nTREE DELETE\n");
-    printf("delete 17: ");
-    red_black_delete(tree_search(17));
-    tree_print(ROOT);
-    printf("\n");
-    printf("delete 5: ");
-    red_black_delete(tree_search(5));
-    tree_print(ROOT);
-    printf("\n");
-    printf("delete 51: ");
-    red_black_delete(tree_search(51));
-    tree_print(ROOT);
-    printf("\n");
-    printf("delete 17: ");
-    red_black_delete(tree_search(17));
-    tree_print(ROOT);
-    printf("\n");
-
-    return 0;
+    /* Make x, y's left child & y, x's parent */
+    y->left = x;
+    x->parent = y;
 }
 
-/* Print tree keys by inorder tree walk */
 
-void tree_print(struct node *x){
-    if(x != NILL){
-        tree_print(x->left);
-        printf("%d\t", x->key);
-        tree_print(x->right);
+void right_rotate(struct node *x){
+    struct node *y;
+
+    /* Make y's right child x's left child */
+    y = x->left;
+    x->left = y->right;
+    if(y->right != NILL){
+        y->right->parent = x;
     }
+
+    /* Make x's parent y's parent and y, x's parent's child */
+    y->parent = x->parent;
+    if(y->parent == NILL){
+        ROOT = y;
+    }
+    else if(x == x->parent->left){
+        x->parent->left = y;    
+    }
+    else{
+        x->parent->right = y;
+    }
+
+    /* Make y, x's parent and x, y's child */
+    y->right = x;
+    x->parent = y;
 }
 
-struct node *tree_search(int key){
+void display(struct node *root, int space){
+    if (root == NILL) {
+        return;
+    }
+    space += COUNT;
+    display(root->right, space);
+    printf("\n");
+    for(int i = COUNT; i<space;i++)
+        printf(" ");
+    if(root->color){
+        printf("(%d)\n", root->data );
+    }
+    else{
+        printf(" %d \n", root->data );
+    }
+    display(root->left, space);
+}
+
+struct node *tree_search(int data){
     struct node *x;
 
     x = ROOT;
-    while(x != NILL && x->key != key){
-        if(key < x->key){
+    while(x != NILL && x->data != data){
+        if(data < x->data){
             x = x->left;
         }
         else{
@@ -142,45 +111,6 @@ struct node *tree_minimum(struct node *x){
     }
     return x;
 }
-
-
-void red_black_insert(int key){
-    struct node *z, *x, *y;
-    z = malloc(sizeof(struct node));
-
-    z->key = key;
-    z->color = RED;
-    z->left = NILL;
-    z->right = NILL;
-
-    x = ROOT;
-    y = NILL;
-
-    while(x != NILL){
-        y = x;
-        if(z->key <= x->key){
-            x = x->left;
-        }
-        else{
-            x = x->right;
-        }
-    }
-
-    if(y == NILL){
-        ROOT = z;
-    }
-    else if(z->key <= y->key){
-        y->left = z;
-    }
-    else{
-        y->right = z;
-    }
-
-    z->parent = y;
-
-    red_black_insert_fixup(z);
-}
-
 void red_black_insert_fixup(struct node *z){
     while(z->parent->color == RED){
 
@@ -239,107 +169,42 @@ void red_black_insert_fixup(struct node *z){
     ROOT->color = BLACK;
 }
 
+void red_black_insert(int data){
+    struct node *z, *x, *y;
+    z = malloc(sizeof(struct node));
 
-void left_rotate(struct node *x){
-    struct node *y;
-    
-    /* Make y's left child x's right child */
-    y = x->right;
-    x->right = y->left;
-    if(y->left != NILL){
-        y->left->parent = x;
-    }
+    z->data = data;
+    z->color = RED;
+    z->left = NILL;
+    z->right = NILL;
 
-    /* Make x's parent y's parent and y, x's parent's child */
-    y->parent = x->parent;
-    if(y->parent == NILL){
-        ROOT = y;
-    }
-    else if(x == x->parent->left){
-        x->parent->left = y;
-    }
-    else{
-        x->parent->right = y;
-    }
-    
-    /* Make x, y's left child & y, x's parent */
-    y->left = x;
-    x->parent = y;
-}
+    x = ROOT;
+    y = NILL;
 
-
-void right_rotate(struct node *x){
-    struct node *y;
-
-    /* Make y's right child x's left child */
-    y = x->left;
-    x->left = y->right;
-    if(y->right != NILL){
-        y->right->parent = x;
-    }
-
-    /* Make x's parent y's parent and y, x's parent's child */
-    y->parent = x->parent;
-    if(y->parent == NILL){
-        ROOT = y;
-    }
-    else if(x == x->parent->left){
-        x->parent->left = y;    
-    }
-    else{
-        x->parent->right = y;
-    }
-
-    /* Make y, x's parent and x, y's child */
-    y->right = x;
-    x->parent = y;
-}
-
-void red_black_delete(struct node *z){
-    if (z == NILL){
-        printf("The data is not found\n");
-        return;
-    }
-    struct node *y, *x;
-    int yOriginalColor;
-
-    y = z;
-    yOriginalColor = y->color;
-
-    if(z->left == NILL){
-        x = z->right;
-        red_black_transplant(z, z->right);
-    }
-    else if(z->right == NILL){
-        x = z->left;
-        red_black_transplant(z, z->left);
-    }
-    else{
-        y = tree_minimum(z->right);
-        yOriginalColor = y->color;
-
-        x = y->right;
-
-        if(y->parent == z){
-            x->parent = y;
+    while(x != NILL){
+        y = x;
+        if(z->data <= x->data){
+            x = x->left;
         }
         else{
-            red_black_transplant(y, y->right);
-            y->right = z->right;
-            y->right->parent = y;
+            x = x->right;
         }
-
-        red_black_transplant(z, y);
-        y->left = z->left;
-        y->left->parent = y;
-        y->color = z->color;
     }
 
-    if(yOriginalColor == BLACK){
-        red_black_delete_fixup(x);
+    if(y == NILL){
+        ROOT = z;
     }
+    else if(z->data <= y->data){
+        y->left = z;
+    }
+    else{
+        y->right = z;
+    }
+
+    z->parent = y;
+
+    red_black_insert_fixup(z);
 }
-
 
 void red_black_delete_fixup(struct node *x){
     struct node *w; 
@@ -430,4 +295,83 @@ void red_black_transplant(struct node *u, struct node *v){
     }
 
     v->parent = u->parent;
+}
+void red_black_delete(struct node *z){
+    if (z == NILL){
+        printf("The data is not found\n");
+        return;
+    }
+    struct node *y, *x;
+    int yOriginalColor;
+
+    y = z;
+    yOriginalColor = y->color;
+
+    if(z->left == NILL){
+        x = z->right;
+        red_black_transplant(z, z->right);
+    }
+    else if(z->right == NILL){
+        x = z->left;
+        red_black_transplant(z, z->left);
+    }
+    else{
+        y = tree_minimum(z->right);
+        yOriginalColor = y->color;
+
+        x = y->right;
+
+        if(y->parent == z){
+            x->parent = y;
+        }
+        else{
+            red_black_transplant(y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+
+        red_black_transplant(z, y);
+        y->left = z->left;
+        y->left->parent = y;
+        y->color = z->color;
+    }
+
+    if(yOriginalColor == BLACK){
+        red_black_delete_fixup(x);
+    }
+}
+
+
+int main(){
+    NILL = malloc(sizeof(struct node));
+    NILL->color = BLACK;
+
+    ROOT = NILL;
+
+    char status[6];
+    
+    scanf("%s",status);
+    // printf("%s\n",status);
+    while(strncmp(status,"end",3)){
+        
+        if(!strncmp(status,"insert",6)){
+            // int *data = (int*)malloc(sizeof(int));
+            // scanf("%d",data);
+            int data;
+            scanf("%d",&data);
+            // printf("%sooooo%d\n", status,*data);
+            if (tree_search(data) == NILL){
+                red_black_insert(data);
+            }
+        }
+        else if(!strncmp(status,"delete",6)){
+            int data;
+            scanf("%d",&data);
+            red_black_delete(tree_search(data));
+        }
+        scanf("%s",status);
+        // printf("%sooooo\n", status);
+    }
+    display(ROOT, 0);
+    return 0;
 }
